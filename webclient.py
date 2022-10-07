@@ -8,7 +8,7 @@ else:
     port = 80
 sock = socket.socket()
 sock.connect((host, port))
-s = f"GET /file2.html HTTP/1.1\r\n\
+s = f"GET /file1.txt HTTP/1.1\r\n\
 Host: {host}\r\n\
 Connection: close\r\n\r\n"
 s = s.encode("ISO-8859-1")

@@ -10,7 +10,12 @@ if len(sys.argv) > 1:
 else:
     port = 28333
  
-extMap = {".txt" : "text/plain", ".html" : "text/html", ".ico" : "image/x-icon"}
+extMap = {
+    ".txt" : "text/plain",
+    ".html" : "text/html",
+    ".ico" : "image/x-icon",
+    ".gif" : "image/gif"
+    }
 
 s = socket.socket()
 s.bind(('', int(port)))
@@ -30,10 +35,7 @@ def get_requested_file_name(request):
         filename = ''
     return filename
 
-while True:
-    new_conn = s.accept()
-    new_socket = new_conn[0]
-
+def get_request_header():
     request = b''
     while True:
         chunk = new_socket.recv(4096)
@@ -41,9 +43,9 @@ while True:
         if request.find(b"\r\n\r\n"):
             break
     request = request.decode("ISO-8859-1")
+    return request
 
-    filename = get_requested_file_name(request)
-    
+def construct_response(filename):
     try:
         with open(filename) as fp:
             extension = os.path.splitext(filename)[1]
@@ -51,8 +53,8 @@ while True:
             length = len(data.encode("ISO-8859-1"))
             MIMEType = extMap[extension]
             response = f"HTTP/1.1 200 OK\r\n"\
-                        "Content-Type: {MIMEType}; charset=iso-8859-1\r\n"\
-                        "Content-Length: {length}\r\n"\
+                        f"Content-Type: {MIMEType}; charset=iso-8859-1\r\n"\
+                        f"Content-Length: {length}\r\n"\
                         "Connection: close\r\n\r\n" + data
 
     except:
@@ -62,6 +64,15 @@ while True:
                     "Content-Length: 13\r\n"\
                     "Connection: close\r\n\r\n"\
                     "404 not found"
+    return response
+while True:
+    new_conn = s.accept()
+    new_socket = new_conn[0]
+
+    request = get_request_header()
+    filename = get_requested_file_name(request)
+
+    response = construct_response(filename)
 
     new_socket.sendall(response.encode("ISO-8859-1"))
     new_socket.close()
