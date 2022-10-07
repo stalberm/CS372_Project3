@@ -3,7 +3,10 @@ import sys
 import os
 
 if len(sys.argv) > 1:
-    port = sys.argv[1]
+    if sys.argv[1].isnumeric():
+        port = sys.argv[1]
+    else:
+        sys.exit(f"Invalid Port Number: {sys.argv[1]}")
 else:
     port = 28333
     
