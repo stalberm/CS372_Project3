@@ -9,29 +9,36 @@ if len(sys.argv) > 1:
         sys.exit(f"Invalid Port Number: {sys.argv[1]}")
 else:
     port = 28333
-    
+ 
+extMap = {".txt" : "text/plain", ".html" : "text/html", ".ico" : "image/x-icon"}
+
 s = socket.socket()
 s.bind(('', int(port)))
 s.listen()
-extMap = {".txt" : "text/plain", ".html" : "text/html", ".ico" : "image/x-icon"}
+
 while True:
     new_conn = s.accept()
     new_socket = new_conn[0]
-    request = ''
+
+    request = b''
     while True:
-        chunk = new_socket.recv(4096).decode("ISO-8859-1")
+        chunk = new_socket.recv(4096)
         request = request + chunk
-        if request.find("\r\n\r\n"):
+        if request.find(b"\r\n\r\n"):
             break
+    request = request.decode("ISO-8859-1")
+
     path = request.split("\r\n")[0].split()[1]
     print(path)
+
     filename = os.path.split(path)[1]
     print(os.path.splitext(filename)[1])
-    MIMEType = extMap[os.path.splitext(filename)[1]]
+
     try:
         with open(filename) as fp:
             data = fp.read()   # Read entire file
             length = len(data.encode("ISO-8859-1"))
+            MIMEType = extMap[os.path.splitext(filename)[1]]
             response = f"HTTP/1.1 200 OK\r\n\
 Content-Type: {MIMEType}; charset=iso-8859-1\r\n\
 Content-Length: {length}\r\n\
